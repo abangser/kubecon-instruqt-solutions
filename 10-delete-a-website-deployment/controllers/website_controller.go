@@ -90,7 +90,7 @@ func (r *WebsiteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 			// If either the deploy or service deletes fail, the reconcile should fail
 			if deployErr != nil || serviceErr != nil {
-				return ctrl.Result{}, fmt.Errorf("%w/n%w", deployErr, serviceErr)
+				return ctrl.Result{}, fmt.Errorf("%v/n%v", deployErr, serviceErr)
 			}
 
 			return ctrl.Result{}, nil
