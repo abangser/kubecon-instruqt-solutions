@@ -62,7 +62,7 @@ func (r *WebsiteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, err
 	}
 
-	log.Info("Hello from your new website reconciler!")
+	log.Info(`Hello from your new website reconciler!`)
 
 	return ctrl.Result{}, nil
 }

@@ -104,7 +104,7 @@ func (r *WebsiteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	// Use the `ImageTag` field from the website spec to personalise the log
-	log.Info(fmt.Sprintf(`Hello website reconciler with tag "%s"!`, customResource.Spec.ImageTag))
+	log.Info(fmt.Sprintf(`Hello from your new website reconciler "%s"!`, customResource.Spec.ImageTag))
 
 	// Attempt to create the deployment
 	err = r.Client.Create(ctx, newDeployment(customResource.Name, customResource.Namespace, customResource.Spec.ImageTag))

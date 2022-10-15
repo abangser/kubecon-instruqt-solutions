@@ -64,7 +64,7 @@ func (r *WebsiteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	// Use the `ImageTag` field from the website spec to personalise the log
-	log.Info(fmt.Sprintf(`Hello website reconciler with tag "%s"!`, customResource.Spec.ImageTag))
+	log.Info(fmt.Sprintf(`Hello from your new website reconciler "%s"!`, customResource.Spec.ImageTag))
 
 	return ctrl.Result{}, nil
 }
