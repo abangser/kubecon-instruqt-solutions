@@ -78,28 +78,55 @@ func (r *WebsiteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	// Attempt to create the deployment
 	err = r.Client.Create(ctx, newDeployment(customResource.Name, customResource.Namespace, customResource.Spec.ImageTag))
-  if err != nil {
-    if errors.IsAlreadyExists(err) {
-      log.Info(fmt.Sprintf(`Deployment for website "%s" already exists"`, customResource.Name))
-      // TODO: handle updates gracefully
-      return ctrl.Result{}, nil
-    } else {
-      log.Error(err, fmt.Sprintf(`Failed to create deployment for website "%s"`, customResource.Name))
-      return ctrl.Result{}, err
-    }
-  }
+	// If it fails due to a deployment of the same name already existing, update must be handled.
+	// Any other failure so fail the reconcile.
+	if err != nil {
+		if errors.IsAlreadyExists(err) {
+			log.Info(fmt.Sprintf(`Deployment for website "%s" already exists`, customResource.Name))
+
+			// Retrieve the current deployment for this website
+			deploymentNamespacedName := types.NamespacedName{
+				Name:      customResource.Name,
+				Namespace: customResource.Namespace,
+			}
+			deployment := appsv1.Deployment{}
+			r.Client.Get(ctx, deploymentNamespacedName, &deployment)
+
+			// Update can be based on any or all fields of the resource. In this simple operator, only
+			// the imageTag field which is being provided by the custom resource will be validated.
+			currentImage := deployment.Spec.Template.Spec.Containers[0].Image
+			desiredImage := fmt.Sprintf("abangser/todo-local-storage:%s", customResource.Spec.ImageTag)
+
+			if currentImage != desiredImage {
+				log.Info(fmt.Sprintf(`Image tag has updated from "%s" to "%s"`, currentImage, desiredImage))
+				
+				// This operator only cares about the one field, it does not want
+				// to alter any other changes that may be acceptable. Therefore,
+				// this update will only patch the single field!
+				patch := client.StrategicMergeFrom(deployment.DeepCopy())
+				deployment.Spec.Template.Spec.Containers[0].Image = desiredImage
+				patch.Data(&deployment)
+
+				// Try and apply this patch, if it fails, return the failure
+				err := r.Client.Patch(ctx, &deployment, patch)
+				if err != nil {
+					log.Error(err, fmt.Sprintf(`Failed to update deployment for website "%s"`, customResource.Name))
+					return ctrl.Result{}, err
+				}
+			}
+
+			return ctrl.Result{}, nil
+		} else {
+			log.Error(err, fmt.Sprintf(`Failed to create deployment for website "%s"`, customResource.Name))
+			return ctrl.Result{}, err
+		}
+	}
 
 	// Attempt to create the service and return error if it fails
 	err = r.Client.Create(ctx, newService(customResource.Name, customResource.Namespace))
 	if err != nil {
-		if errors.IsAlreadyExists(err) {
-			log.Info(fmt.Sprintf(`Service for website "%s" already exists`, customResource.Name))
-      // TODO: handle updates gracefully
-			return ctrl.Result{}, nil
-		} else {
-			log.Error(err, fmt.Sprintf(`Failed to create service for website "%s"`, customResource.Name))
-			return ctrl.Result{}, err
-		}
+		log.Error(err, fmt.Sprintf(`Failed to create service for website "%s"`, customResource.Name))
+		return ctrl.Result{}, err
 	}
 
 	return ctrl.Result{}, nil
