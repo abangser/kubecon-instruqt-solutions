@@ -62,10 +62,10 @@ func (r *WebsiteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	customResource := &kubeconv1beta1.Website{}
 
 	// Then retrieve from the cluster the resource that triggered this reconciliation.
-	// The contents of this resource are then stored into an object used throughout reconciliation.
+	// Store these contents into an object used throughout reconciliation.
 	err := r.Client.Get(context.Background(), req.NamespacedName, customResource)
 	if err != nil {
-		// If the resource cannot be translated into a "Website" resource type, return failure.
+		// If the resource does not match a "Website" resource type, return failure.
 		return ctrl.Result{}, err
 	}
 
