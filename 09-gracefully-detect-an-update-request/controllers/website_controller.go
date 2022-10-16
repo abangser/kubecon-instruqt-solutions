@@ -91,7 +91,7 @@ func (r *WebsiteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	// Attempt to create the service and return error if it fails
 	err = r.Client.Create(ctx, newService(customResource.Name, customResource.Namespace))
 	if err != nil {
-		if errors.IsAlreadyExists(err) {
+		if errors.IsInvalid(err) && strings.Contains(err.Error(), "provided port is already allocated") {
 			log.Info(fmt.Sprintf(`Service for website "%s" already exists`, customResource.Name))
       // TODO: handle updates gracefully
 		} else {
