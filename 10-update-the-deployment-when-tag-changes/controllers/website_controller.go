@@ -99,7 +99,7 @@ func (r *WebsiteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 			if currentImage != desiredImage {
 				log.Info(fmt.Sprintf(`Image tag has updated from "%s" to "%s"`, currentImage, desiredImage))
-				
+
 				// This operator only cares about the one field, it does not want
 				// to alter any other changes that may be acceptable. Therefore,
 				// this update will only patch the single field!
@@ -114,8 +114,6 @@ func (r *WebsiteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 					return ctrl.Result{}, err
 				}
 			}
-
-			return ctrl.Result{}, nil
 		} else {
 			log.Error(err, fmt.Sprintf(`Failed to create deployment for website "%s"`, customResource.Name))
 			return ctrl.Result{}, err

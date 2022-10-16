@@ -142,8 +142,6 @@ func (r *WebsiteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 					return ctrl.Result{}, err
 				}
 			}
-
-			return ctrl.Result{}, nil
 		} else {
 			log.Error(err, fmt.Sprintf(`Failed to create deployment for website "%s"`, customResource.Name))
 			return ctrl.Result{}, err
